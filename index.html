@@ -15,12 +15,21 @@
 
 body {
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     overflow: hidden;
+    position: relative;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .container {
@@ -31,6 +40,7 @@ body {
     max-width: 420px;
     width: 90%;
     position: relative;
+    z-index: 2;
 }
 
 h1 {
@@ -69,9 +79,7 @@ button {
     cursor: pointer;
 }
 
-.yes-btn:hover {
-    background: #ff1e4d;
-}
+.yes-btn:hover { background: #ff1e4d; }
 
 .no-btn {
     position: absolute;
@@ -80,10 +88,7 @@ button {
     pointer-events: auto;
 }
 
-
-.no-btn.moving {
-    pointer-events: none;
-}
+.no-btn.moving { pointer-events: none; }
 
 .next-btn {
     background: #ff4d6d;
@@ -101,55 +106,31 @@ button {
     padding: 6px 12px;
 }
 
-.container h1 {
-    margin-top: 40px;
-}
+.container h1 { margin-top: 40px; }
 
-.image-wrapper {
-    position: relative;
-    display: inline-block;
-    margin-top: 15px;
-}
+.image-wrapper { position: relative; display: inline-block; margin-top: 15px; z-index: 2; }
 
-.image-wrapper img {
-    width: 100%;
-    max-height: 350px;
-    border-radius: 15px;
-    object-fit: cover;
-    display: block;
-}
+.image-wrapper img { width: 100%; max-height: 350px; border-radius: 15px; object-fit: cover; display: block; }
 
-.heart {
+.heart { position: absolute; color: #ff4d6d; font-size: 16px; animation: float 2s infinite ease-in-out alternate; }
+
+@keyframes float { from { transform: translateY(0px) scale(1); } to { transform: translateY(-8px) scale(1.1); } }
+
+/* Falling hearts background */
+.bg-heart {
     position: absolute;
+    width: 15px;
+    height: 15px;
     color: #ff4d6d;
-    font-size: 16px;
-    animation: float 2s infinite ease-in-out alternate;
+    animation: fall linear infinite;
+    font-size: 14px;
+    z-index: 1;
 }
 
-.heart.h1 { top: -12px; left: 10%; }
-.heart.h2 { top: -15px; left: 30%; animation-delay: 0.5s; }
-.heart.h3 { top: -12px; left: 50%; animation-delay: 1s; }
-.heart.h4 { top: -15px; left: 70%; animation-delay: 1.5s; }
-.heart.h5 { top: -12px; right: 10%; animation-delay: 0.8s; }
-
-.heart.h6 { bottom: -12px; left: 10%; animation-delay: 1.2s; }
-.heart.h7 { bottom: -15px; left: 35%; animation-delay: 0.6s; }
-.heart.h8 { bottom: -12px; left: 60%; animation-delay: 1.4s; }
-.heart.h9 { bottom: -15px; right: 15%; animation-delay: 0.3s; }
-
-.heart.h10 { left: -12px; top: 20%; animation-delay: 0.7s; }
-.heart.h11 { left: -15px; top: 50%; animation-delay: 1.1s; }
-.heart.h12 { left: -12px; bottom: 20%; animation-delay: 0.4s; }
-
-.heart.h13 { right: -12px; top: 25%; animation-delay: 1.3s; }
-.heart.h14 { right: -15px; top: 55%; animation-delay: 0.9s; }
-.heart.h15 { right: -12px; bottom: 25%; animation-delay: 1.6s; }
-
-@keyframes float {
-    from { transform: translateY(0px) scale(1); }
-    to { transform: translateY(-8px) scale(1.1); }
+@keyframes fall {
+    0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
-
 </style>
 </head>
 
@@ -170,20 +151,35 @@ button {
 const noBtn = document.getElementById("noBtn");
 const container = document.getElementById("mainContainer");
 const music = document.getElementById("bgMusic");
+let currentDay = 0;
+let isMuted = false;
 
-  let password = prompt("Enter our secret word ❤️");
+// Password protection
+let password = prompt("Enter our secret word ❤️");
+if(password !== "0415"){
+    document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;'>Access Denied 💔</h1>";
+}
 
-  if(password !== "0415"){
-      document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;'>Access Denied 💔</h1>";
-  }
+// Background falling hearts
+function createFallingHearts(num=30){
+    for(let i=0;i<num;i++){
+        const heart = document.createElement('div');
+        heart.className='bg-heart';
+        heart.innerText='❤️';
+        heart.style.left = Math.random()*window.innerWidth + 'px';
+        heart.style.animationDuration = 3 + Math.random()*3 + 's';
+        heart.style.fontSize = 10 + Math.random()*20 + 'px';
+        document.body.appendChild(heart);
+    }
+}
+createFallingHearts();
 
+// Move No button
 noBtn.addEventListener("mouseover", function() {
-    const x = Math.random() * (container.clientWidth - 100);
-    const y = Math.random() * (container.clientHeight - 50);
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
+    moveNoButton();
 });
 
+// Valentine Days
 const valentineDays = [
     { title: "🌹 Rose Day", message: "Like this rose, my love blooms forever ❤️", image: "images/rose.jpg" },
     { title: "💍 Propose Day", message: "Every heartbeat of mine whispers your name 💕", image: "images/propose.jpg" },
@@ -195,83 +191,50 @@ const valentineDays = [
     { title: "❤️ Valentine’s Day", message: "With you, every day feels magical. You are my forever 💖", image: "images/valentine.jpg" }
 ];
 
-let currentDay = 0;
-let isMuted = false;
-
-function startValentine() {
+// Start Valentine
+function startValentine(){
     music.play();
+    celebrate(); // confetti effect when she clicks Yes
     showDay();
 }
 
-function showDay() {
+// Show each day
+function showDay(){
     const day = valentineDays[currentDay];
-
     container.innerHTML = `
         <button class="mute-btn" onclick="toggleMusic()">
             ${isMuted ? "🔇 Unmute" : "🔊 Mute"}
         </button>
-
         <h1>${day.title}</h1>
         <img src="${day.image}" alt="">
         <p>${day.message}</p>
-
         <div style="display:flex; justify-content:space-between; margin-top:15px;">
-            ${currentDay > 0 
-                ? `<button class="yes-btn" onclick="previousDay()">💌 Take Me Back</button>` 
-                : `<div></div>`}
-            
+            ${currentDay > 0 ? `<button class="yes-btn" onclick="previousDay()">💌 Take Me Back</button>` : `<div></div>`}
             <button class="next-btn" onclick="nextDay()">💞 Continue Our Love Story</button>
         </div>
     `;
 }
 
-function nextDay() {
-    currentDay++;
-    if(currentDay < valentineDays.length){
-        showDay();
-    } else {
-        showFinalPage();
-    }
-}
+// Next & Previous
+function nextDay(){ currentDay++; currentDay<valentineDays.length ? showDay() : showFinalPage(); }
+function previousDay(){ currentDay--; showDay(); }
 
-function previousDay() {
-    currentDay--;
-    showDay();
-}
-
-function showFinalPage() {
+// Final Page
+function showFinalPage(){
     container.innerHTML = `
         <button class="mute-btn" onclick="toggleMusic()">
             ${isMuted ? "🔇 Unmute" : "🔊 Mute"}
         </button>
-
         <h1>Forever Starts With You ❤️</h1>
-
-        <p>
-        No matter how many Valentine’s Days come,<br>
-        I only want to spend them with you 💞
-        </p>
-
+        <p>No matter how many Valentine’s Days come,<br>I only want to spend them with you 💞</p>
         <div class="image-wrapper">
-            <span class="heart h1">❤️</span>
-            <span class="heart h2">❤️</span>
-            <span class="heart h3">❤️</span>
-            <span class="heart h4">❤️</span>
-            <span class="heart h5">❤️</span>
-            <span class="heart h6">❤️</span>
-            <span class="heart h7">❤️</span>
-            <span class="heart h8">❤️</span>
-            <span class="heart h9">❤️</span>
-            <span class="heart h10">❤️</span>
-            <span class="heart h11">❤️</span>
-            <span class="heart h12">❤️</span>
-            <span class="heart h13">❤️</span>
-            <span class="heart h14">❤️</span>
-            <span class="heart h15">❤️</span>
-
+            <span class="heart h1">❤️</span><span class="heart h2">❤️</span><span class="heart h3">❤️</span>
+            <span class="heart h4">❤️</span><span class="heart h5">❤️</span><span class="heart h6">❤️</span>
+            <span class="heart h7">❤️</span><span class="heart h8">❤️</span><span class="heart h9">❤️</span>
+            <span class="heart h10">❤️</span><span class="heart h11">❤️</span><span class="heart h12">❤️</span>
+            <span class="heart h13">❤️</span><span class="heart h14">❤️</span><span class="heart h15">❤️</span>
             <img src="images/her.jpg">
         </div>
-
         <div style="display:flex; justify-content:space-between; margin-top:20px;">
             <button class="yes-btn" onclick="previousDay()">💌 Take Me Back</button>
             <button class="next-btn" onclick="restartLove()">💖 Relive Our Love Again!!</button>
@@ -279,43 +242,39 @@ function showFinalPage() {
     `;
 }
 
-function moveNoButton() {
-    const noBtn = document.querySelector(".no-btn");
-
-    // disable clicking while moving
+// Move No button
+function moveNoButton(){
     noBtn.classList.add("moving");
-
-    // calculate random position
-    const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-    const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
-
+    const x = Math.random()*(window.innerWidth-noBtn.offsetWidth);
+    const y = Math.random()*(window.innerHeight-noBtn.offsetHeight);
     noBtn.style.left = `${x}px`;
     noBtn.style.top = `${y}px`;
-
-    // re-enable clicking after movement ends (optional delay)
-    setTimeout(() => {
-        noBtn.classList.remove("moving");
-    }, 300); // match the CSS transition duration
+    setTimeout(()=>{ noBtn.classList.remove("moving"); }, 300);
 }
 
+// Restart
+function restartLove(){ currentDay=0; showDay(); }
 
-function restartLove(){
-    currentDay = 0;
-    showDay();
-}
+// Music toggle
+function toggleMusic(){ music.paused ? music.play() : music.pause(); isMuted = music.paused; }
 
-function toggleMusic(){
-    if(music.paused){
-        music.play();
-        isMuted = false;
-    } else {
-        music.pause();
-        isMuted = true;
+// Confetti effect
+function celebrate(){
+    const confettiCount=80;
+    for(let i=0;i<confettiCount;i++){
+        const c=document.createElement('div');
+        c.style.position='absolute';
+        c.style.width='10px'; c.style.height='10px';
+        c.style.background=`hsl(${Math.random()*360},100%,50%)`;
+        c.style.top='0px'; c.style.left=Math.random()*window.innerWidth+'px';
+        c.style.opacity=0.8; c.style.borderRadius='50%'; c.style.pointerEvents='none';
+        c.style.transition='transform 2s ease-out, opacity 2s ease-out';
+        document.body.appendChild(c);
+        setTimeout(()=>{ c.style.transform=`translateY(${window.innerHeight}px) rotate(${Math.random()*360}deg)`; c.style.opacity=0; }, 10);
+        setTimeout(()=>c.remove(),2100);
     }
 }
 </script>
-
-
 
 </body>
 </html>

@@ -65,6 +65,8 @@ button {
 .yes-btn {
     background: #ff4d6d;
     color: white;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .yes-btn:hover {
@@ -72,9 +74,15 @@ button {
 }
 
 .no-btn {
-    background: #999;
-    color: white;
     position: absolute;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+}
+
+
+.no-btn.moving {
+    pointer-events: none;
 }
 
 .next-btn {
@@ -162,6 +170,12 @@ button {
 const noBtn = document.getElementById("noBtn");
 const container = document.getElementById("mainContainer");
 const music = document.getElementById("bgMusic");
+
+  let password = prompt("Enter our secret word ❤️");
+
+  if(password !== "0415"){
+      document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;'>Access Denied 💔</h1>";
+  }
 
 noBtn.addEventListener("mouseover", function() {
     const x = Math.random() * (container.clientWidth - 100);
@@ -264,6 +278,26 @@ function showFinalPage() {
         </div>
     `;
 }
+
+function moveNoButton() {
+    const noBtn = document.querySelector(".no-btn");
+
+    // disable clicking while moving
+    noBtn.classList.add("moving");
+
+    // calculate random position
+    const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+    const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+
+    noBtn.style.left = `${x}px`;
+    noBtn.style.top = `${y}px`;
+
+    // re-enable clicking after movement ends (optional delay)
+    setTimeout(() => {
+        noBtn.classList.remove("moving");
+    }, 300); // match the CSS transition duration
+}
+
 
 function restartLove(){
     currentDay = 0;
